@@ -76,9 +76,11 @@ class PygameCanvas(Gtk.EventBox):
         _surface = pygame.transform.scale(self._screen, (width, height))
         pygame.image.save(_surface, _file_path)
 
-        f = open(_file_path, 'r')
+        # encoding set as ISO-8859-1 in the following lines of code, while reading png data causes UnicodeDecode Error
+        # Fix from https://stackoverflow.com/questions/19699367
+        f = open(_file_path, 'r', encoding='ISO-8859-1') 
         preview = f.read()
         f.close()
         os.remove(_file_path)
 
-        return preview
+        return preview.encode('ISO-8859-1')
