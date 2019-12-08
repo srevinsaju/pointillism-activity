@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Pointillism
@@ -31,8 +31,8 @@ import random
 try:
     import pygame
     from pygame import camera
-except ImportError:
-    print 'Error in import Pygame. This activity requires Pygame 1.9'
+except (ImportError, ModuleNotFoundError):
+    print('Error in import Pygame. This activity requires Pygame 1.9')
 
 class Puntillism():
 
