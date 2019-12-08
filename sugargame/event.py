@@ -28,6 +28,8 @@ class Translator(object):
         'KP_Down': pygame.K_KP2,
         'KP_Left': pygame.K_KP4,
         'KP_Right': pygame.K_KP6,
+        'KP_Next': pygame.K_KP3,
+        'KP_Begin': pygame.K_KP5,
 
     }
 
@@ -98,7 +100,7 @@ class Translator(object):
     def _resize_cb(self, widget, event):
         if pygame.display.get_init():
             evt = pygame.event.Event(pygame.VIDEORESIZE,
-                                     size=(event.width,event.height),
+                                     size=(event.width, event.height),
                                      width=event.width, height=event.height)
             pygame.event.post(evt)
         return False  # continue processing
@@ -171,7 +173,7 @@ class Translator(object):
             ukey = chr(Gdk.keyval_to_unicode(event.keyval))
             if ukey == '\000':
                 ukey = ''
-            evt = pygame.event.Event(type, key=keycode, str=ukey, mod=mod)
+            evt = pygame.event.Event(type, key=keycode, unicode=ukey, mod=mod)
             self._post(evt)
 
         return True
@@ -192,7 +194,7 @@ class Translator(object):
 
     def _mouseevent(self, widget, event, type):
         evt = pygame.event.Event(type, button=event.button, pos=(event.x,
-            event.y))
+                                                                 event.y))
         self._post(evt)
         return True
 
