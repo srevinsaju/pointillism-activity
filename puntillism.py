@@ -65,8 +65,11 @@ class Puntillism():
         clock = pygame.time.Clock()
 
         cam = camera.Camera("/dev/video0", (640, 480), "RGB")
-        #cam.set_controls(1, 0)
         cam.start()
+        try:
+            cam.set_controls(hflip=True)
+        except SystemError:
+            pass
 
         cap = pygame.surface.Surface((640, 480), 0, screen)
         frames = 0
