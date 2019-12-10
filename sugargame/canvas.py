@@ -3,7 +3,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from sugar3.activity.activity import PREVIEW_SIZE
 import pygame
-from . import event
+import sugargame.event as event
 
 CANVAS = None
 
@@ -13,7 +13,7 @@ class PygameCanvas(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
 
         global CANVAS
-        assert CANVAS == None, "Only one PygameCanvas can be created, ever."
+        assert CANVAS is None, "Only one PygameCanvas can be created, ever."
         CANVAS = self
 
         # Initialize Events translator before widget gets "realized".
@@ -68,7 +68,7 @@ class PygameCanvas(Gtk.EventBox):
             return None
 
         _tmp_dir = os.path.join(self._activity.get_activity_root(),
-            'tmp')
+                                'tmp')
         _file_path = os.path.join(_tmp_dir, 'preview.png')
 
         width = PREVIEW_SIZE[0]
@@ -76,11 +76,9 @@ class PygameCanvas(Gtk.EventBox):
         _surface = pygame.transform.scale(self._screen, (width, height))
         pygame.image.save(_surface, _file_path)
 
-        # encoding set as ISO-8859-1 in the following lines of code, while reading png data causes UnicodeDecode Error
-        # Fix from https://stackoverflow.com/questions/19699367
-        f = open(_file_path, 'r', encoding='ISO-8859-1') 
+        f = open(_file_path, 'rb')
         preview = f.read()
         f.close()
         os.remove(_file_path)
 
-        return preview.encode('ISO-8859-1')
+        return preview
