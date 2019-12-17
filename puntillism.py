@@ -28,6 +28,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import random
+from sugar3 import mime
+from sugar3.graphics.objectchooser import ObjectChooser
+from sugar3.datastore import datastore
+
 try:
     import pygame
     from pygame import camera
@@ -38,6 +42,8 @@ class Puntillism():
 
     def __init__(self, parent):
         self.parent = parent
+        #global file_path
+        self.file_path = "NULL"
         #logging.basicConfig()
 
     def poner_radio1(self, radio):
@@ -45,6 +51,19 @@ class Puntillism():
 
     def poner_radio2(self, radio):
         self.radio2 = radio
+
+    def _choose_image_from_journal_cb(self, button):
+        ''' Create a chooser for image objects '''
+
+        self.image_id = None
+        chooser = ObjectChooser(what_filter=mime.GENERIC_TYPE_IMAGE)
+        result = chooser.run()
+        if result == Gtk.ResponseType.ACCEPT:
+            jobject = chooser.get_selected_object()
+            self.image_id = str(jobject._object_id)
+        print(str(jobject.get_file_path()))
+        puntillism.Puntillism.file_path = str(jobject.get_file_path())
+        return str(jobject.get_file_path())
 
     def run(self):
         #size = (1200,900)
@@ -88,19 +107,46 @@ class Puntillism():
             green0 = (0, 255, 0) 
             white0 = (255, 255, 255) 
             blue0 = (0, 0, 128) 
-            font = pygame.font.Font('freesansbold.ttf', 32)
-            text = font.render('Oops! You doesn\'t seem to have a Camera. Use Load Image option', True, green0, blue0) 
+            font = pygame.font.Font('freesansbold.ttf', 16)
+            text = font.render('uh-oh! You doesn\'t seem to have a Camera. Use Open Image option', True, green0, blue0) 
             textRect = text.get_rect() 
             textRect.center = (x_s // 2, y_s // 2)
             print("LOG: No /dev/video0 found")
             camNotFound_holder = True
-
-
+            screen.fill((0,0,0))
+            pygame.display.update() 
+        
         while (not camfound) and camNotFound_holder:
+    
+            # print(self.file_path) Uncomment this line to know file path
+            # For debuggers only
+            
+            if self.file_path != "NULL":
+                  
+                cad = pygame.image.load(self.file_path).convert_alpha()
+                cad = pygame.transform.scale(cad, (640,480))
+                rect = []
+                
+                for z in range(max(20, int(frames)*10)):
+                    x = random.random()
+                    y = random.random()
+                    if self.radio1 > self.radio2:
+                        aux = self.radio2
+                        self.radio2 = self.radio1
+                        self.radio1 = aux
+                    elif self.radio1 == self.radio2:
+                        self.radio2 = self.radio2 + 1
+                    num = random.randrange(self.radio1, self.radio2, 1)
+                    
+                    rect.append(pygame.draw.circle(screen, cad.get_at((int(x * 640), int(y * 480))), (int(x * x_s), int(y * y_s)), num, 0))
+                pygame.display.update(rect)
 
-            screen.fill(white0) 
-            screen.blit(text, textRect) 
-            pygame.display.update()
+            else:
+                
+                screen.fill((0,0,0)) 
+                screen.blit(text, textRect) 
+                pygame.display.update()
+            
             clock.tick()
             frames = clock.get_fps()
 
@@ -126,6 +172,15 @@ class Puntillism():
                     if hasattr(event,'action'):
                         if event.action == 'savebutton':
                             self.parent.save_image(screen)
+                        if event.action == 'openbutton':
+                            #global file_path
+                            print("OPEN")
+                            self.file_path = self.parent.choose_image_from_journal_cb()
+                            # print(">.... ", self.file_path)
+                            print("LOG: File Loaded Successfully")
+                            screen.fill((0,0,0)) 
+                            
+                            
 
         # after checking if camera exists, cam is not accepted if /dev/video0 > null
         # Usually null gives a black screen, before initiating the display
