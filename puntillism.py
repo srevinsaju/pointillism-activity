@@ -55,6 +55,8 @@ class Puntillism():
         self.radio1 = 2
         self.radio2 = 12
 
+        camNotFound_holder = False  # create a local variable to check camera not found and in loop
+
         screen = pygame.display.get_surface()
         screen.fill((0,0,0))
         pygame.display.flip()
@@ -63,9 +65,16 @@ class Puntillism():
         x_s, y_s = screen.get_size()
 
         clock = pygame.time.Clock()
-
-        cam = camera.Camera("/dev/video0", (640, 480), "RGB")
-        cam.start()
+        running = True
+        camfound = False
+        try:
+            cam = camera.Camera("/dev/video0", (640, 480), "RGB")
+            cam.start()
+            camfound = True
+            
+        except SystemError:
+            running = False
+            camfound = False
         try:
             cam.set_controls(hflip=True)
         except SystemError:
@@ -73,10 +82,65 @@ class Puntillism():
 
         cap = pygame.surface.Surface((640, 480), 0, screen)
         frames = 0
-        running = True
+        
+        if not camfound:
+            # define some colors for not cam found
+            green0 = (0, 255, 0) 
+            white0 = (255, 255, 255) 
+            blue0 = (0, 0, 128) 
+            font = pygame.font.Font('freesansbold.ttf', 32)
+            text = font.render('Oops! You doesn\'t seem to have a Camera. Use Load Image option', True, green0, blue0) 
+            textRect = text.get_rect() 
+            textRect.center = (x_s // 2, y_s // 2)
+            print("LOG: No /dev/video0 found")
+            camNotFound_holder = True
+
+
+        while (not camfound) and camNotFound_holder:
+
+            screen.fill(white0) 
+            screen.blit(text, textRect) 
+            pygame.display.update()
+            clock.tick()
+            frames = clock.get_fps()
+
+            #GTK events
+            while Gtk.events_pending():
+                Gtk.main_iteration()
+
+            events = pygame.event.get()
+            for event in events:
+                #log.debug( "Event: %s", event )
+                if event.type == pygame.QUIT:
+                    camNotFound_holder = False
+                    
+                elif event.type == pygame.VIDEORESIZE:
+                    pygame.display.set_mode(event.size, pygame.RESIZABLE)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        
+                        camNotFound_holder = False
+                    elif event.key == pygame.K_s:
+                        self.parent.save_image(screen)
+                elif event.type == pygame.USEREVENT:
+                    if hasattr(event,'action'):
+                        if event.action == 'savebutton':
+                            self.parent.save_image(screen)
+
+        # after checking if camera exists, cam is not accepted if /dev/video0 > null
+        # Usually null gives a black screen, before initiating the display
+        # A black screen is filled 
+        if running:
+            screen.fill((0,0,0))
+            pygame.display.update()
+
         while running:
             cap = cam.get_image(cap)
+            # Command for loading image cad = pygame.image.load("xx.png").convert_alpha()
+            # print(cap, type(cap), cad, type(cad), "CAAAAAAAAAAAAAAAAAAAAAAAAAAP")
             rect = []
+            
+
             for z in range(max(20, int(frames)*10)):
                 x = random.random()
                 y = random.random()

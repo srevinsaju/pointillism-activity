@@ -109,6 +109,9 @@ class Activity(activity.Activity):
         item4.add(self.cradio2)
         barra.insert(item4, 5)
 
+        loadPic = Gtk.ToolItem()
+        
+
         separator1 = Gtk.SeparatorToolItem()
         separator1.props.draw = True
         separator1.set_expand(False)
